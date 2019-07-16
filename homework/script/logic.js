@@ -14,9 +14,27 @@ function onAddCommodity(addCommodity) {
   var temp = addCommodity.newCommodity
   addCommodity.seller0.commodityList.push(temp);
   //更新资产时获取资产注册表getAssetRegistry,此处更新的是参与者，所以有所不同
-  return getParticipantRegistry('ibm.work.seller')
-    .then(function (participantRegistry) {
+  return getParticipantRegistry('ibm.work.seller').then(
+    function (participantRegistry) {
       return participantRegistry.update(addCommodity.seller0);
+    });
+}
+
+/**
+* A transaction processor function description
+* @param {ibm.work.delCommodity} delCommodity A human description of the parameter
+* @transaction
+*/
+function onDelCommodity(delCommodity) {
+  for (var i = 0, len = delCommodity.seller0.commodityList.lenth; i < len; i++) {
+    if (delCommodity.seller0.commodityList[i].cmdName == cmdName) {
+      var temp = delCommodity.seller0.commodityList[i];
+      delCommodity.seller0.commodityList.pop(temp);
+    }
+  }
+  return getParticipantRegistry('ibm.work.seller').then(
+    function (participantRegistry) {
+      return participantRegistry.update(delCommodity.seller0);
     });
 }
 

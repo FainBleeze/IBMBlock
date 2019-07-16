@@ -60,6 +60,12 @@ transaction addCommodity {
   o cmds newCommodity
 }
 
+//删除商品业务，输入商品名称
+transaction delCommodity{
+  -->seller seller0
+  o String cmdName
+}
+
 //交易业务，输入商品名，创建一个新的订单，买家进行付款
 transaction makeOrder {
   -->seller seller0
