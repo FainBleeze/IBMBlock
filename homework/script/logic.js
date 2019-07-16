@@ -7,7 +7,7 @@
 
 /**
 * A transaction processor function description
-* @param {ibm.work.addCommodity} onAddCommodity A human description of the parameter
+* @param {ibm.work.addCommodity} addCommodity A human description of the parameter
 * @transaction
 */
 function onAddCommodity(addCommodity) {
