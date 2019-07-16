@@ -37,6 +37,7 @@ asset order identified by orderID {
 abstract participant account identified by userID{
   o String userID
   o Double money
+  o String record
 }
 
 //定义商家类
@@ -45,7 +46,7 @@ participant seller extends account {
   o Double onSale default=1.0
   //商家的商品列表
   o cmds[] commodityList
-  //未完成的订单列表
+  //订单列表
   o order[] orders
 }
 

@@ -19,7 +19,6 @@ function onAddCommodity(addCommodity) {
       return participantRegistry.update(addCommodity.seller0);
     });
 }
-
 //创建新订单时不能直接使用new，下面是官方文档给出的生成新资源的JS语句：
 // let factory = this.businessNetworkDefinition.getFactory();此句照抄
 // 下面调用的函数的三个参数是，命名空间，资源名称，辨识ID定义
