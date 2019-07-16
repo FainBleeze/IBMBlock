@@ -1,0 +1,92 @@
+/**
+ * business network definition.
+ */
+namespace ibm.work
+
+//定义与商品有关的属性，相当于C++中的struct，属性有名称，价格
+concept commodity {
+  o String cmdName
+  o Double cmdPrice
+}
+
+//在seller类中还需要记录商品的储量
+concept cmds extends commodity {
+  o Integer cmdNum
+}
+
+//订单状态
+enum orderState{
+  o recieved//已接单
+  o transporting//运输中
+  o got//已签收
+  o finished//已完成，只有当买家确认收货后才会转为已完成，钱转入卖家账户
+  o canceled//已取消，归还买家付的钱
+}
+
+//定义了一个订单类，包括订单号、买卖者账号等内容
+asset order identified by orderID {
+  o String orderID
+  o String sellerID
+  o String buyerID
+  o commodity cmd//商品信息
+  o orderState state//订单状态
+  o DateTime time//下单时间
+}
+
+//定义账号类，包括了ID和账号余额
+abstract participant account identified by userID{
+  o String userID
+  o Double money
+}
+
+//定义商家类
+participant seller extends account {
+  //商品是否处于打折促销状态，正常为1，打折时为折扣 0.*
+  o Double onSale default=1.0
+  //商家的商品列表
+  o cmds[] commodityList
+  //未完成的订单列表
+  o order[] orders
+}
+
+//定义客户类
+participant buyer extends account {
+  o order[] orders
+}
+
+//添加商品业务,输入商品名、价格、储量
+transaction addCommodity {
+  -->seller seller0
+  o cmds newCommodity
+}
+
+//交易业务，输入商品名，创建一个新的订单，买家进行付款
+transaction makeOrder {
+  -->seller seller0
+  -->buyer buyer0
+  o String cmdName
+}
+
+//卖家发货，如果下单三天后还未发货自动退款
+transaction sendOut {
+  -->order order0
+  o DateTime time
+}
+
+//买家确认收货，订单签收一周后自动确认，收货后钱款转至卖家账户
+transaction confirmGet {
+  -->order order0
+  o DateTime time
+}
+
+//退货/取消订单业务，超过10天未签收会自动退货，签收后一周内可以执行退货
+transaction cancelOrder {
+  -->order order0
+  o DateTime time
+}
+
+//商家发起打折活动，输入折扣比率，未完成的订单需退还差价
+transaction sale {
+  -->seller seller0
+  o Double saleRate
+}
