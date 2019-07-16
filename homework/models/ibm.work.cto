@@ -26,8 +26,8 @@ enum orderState{
 //定义了一个订单类，包括订单号、买卖者账号等内容
 asset order identified by orderID {
   o String orderID
-  o String sellerID
-  o String buyerID
+  o seller seller0
+  o buyer buyer0
   o commodity cmd//商品信息
   o orderState state//订单状态
   o DateTime time//下单时间
@@ -37,12 +37,11 @@ asset order identified by orderID {
 abstract participant account identified by userID{
   o String userID
   o Double money
+  o String record
 }
 
 //定义商家类
 participant seller extends account {
-  //商品是否处于打折促销状态，正常为1，打折时为折扣 0.*
-  o Double onSale default=1.0
   //商家的商品列表
   o cmds[] commodityList
   //未完成的订单列表
@@ -76,23 +75,14 @@ transaction makeOrder {
 //卖家发货，如果下单三天后还未发货自动退款
 transaction sendOut {
   -->order order0
-  o DateTime time
 }
 
 //买家确认收货，订单签收一周后自动确认，收货后钱款转至卖家账户
 transaction confirmGet {
   -->order order0
-  o DateTime time
 }
 
 //退货/取消订单业务，超过10天未签收会自动退货，签收后一周内可以执行退货
 transaction cancelOrder {
   -->order order0
-  o DateTime time
-}
-
-//商家发起打折活动，输入折扣比率，未完成的订单需退还差价
-transaction sale {
-  -->seller seller0
-  o Double saleRate
 }
