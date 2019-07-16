@@ -57,12 +57,10 @@ participant buyer extends account {
 //添加商品业务,输入商品名、价格、储量
 transaction addCommodity {
   -->seller seller0
-  o String name0
-  o Double price0
-  o Integer num0
+  o cmds newCommodity
 }
 
-//交易业务，输入商品名，创建一个新的订单类，买家进行付款
+//交易业务，输入商品名，创建一个新的订单，买家进行付款
 transaction makeOrder {
   -->seller seller0
   -->buyer buyer0
