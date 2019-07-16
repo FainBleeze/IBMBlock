@@ -1,159 +1,29 @@
-
-
 /**
- * Sample transaction processor function.
+ * 逻辑执行文件,每个函数前必须有一段注释，尤其注意第二行定义了对应的事务和函数使用的参数名。
+ * 下面的第一个函数已在playground中验证可以正常运行，还剩5个未实现的功能。
+ * 未发货自动退款和超过10天未签收会自动退货、订单签收一周后自动确认
+ *            等自动化功能可以在状态转换时通过setTimeOut(回调函数, 毫秒数)实现
  */
 
-
-
-function onSetSensorTemp(setSensorTemp) {
-    setSensorTemp.gauge.sensorTemp = setSensorTemp.newSensorValue; 
-    return getAssetRegistry('org.acme.sample.Sensor')
-      .then(function (assetRegistry) {
-          return assetRegistry.update(setSensorTemp.gauge);
-      });
+/**
+* A transaction processor function description
+* @param {ibm.work.addCommodity} onAddCommodity A human description of the parameter
+* @transaction
+*/
+function onAddCommodity(addCommodity) {
+  var temp = addCommodity.newCommodity
+  addCommodity.seller0.commodityList.push(temp);
+  //更新资产时获取资产注册表getAssetRegistry,此处更新的是参与者，所以有所不同
+  return getParticipantRegistry('ibm.work.seller')
+    .then(function (participantRegistry) {
+      return participantRegistry.update(addCommodity.seller0);
+    });
 }
 
-function onChangeThermostatTemp(changeThermostat) {
-  var diff = Math.abs(changeThermostat.thermostat.sensorTemp - changeThermostat.newThermostatValue);
-    if (diff <= 3) {
-      changeThermostat.thermostat.thermostatTemp = changeThermostat.newThermostatValue;
-      return getAssetRegistry('org.acme.sample.Sensor')
-        .then(function (assetRegistry) {
-          return assetRegistry.update(changeThermostat.thermostat);
-      });
-    } else {
-      //reject transaction
-      throw new Error("Too much difference! Current sensor reading " + changeThermostat.thermostat.sensorTemp);
-    }
-}
-
-function onCompareWeather(compareWeather) {
-  //Make life easier. Put all values for this function in vars.
-  var outsideTemp = compareWeather.outsideTemp;
-  var feelsLike = compareWeather.feelsLike;
-  var thermostatTemp = compareWeather.recommend.thermostatTemp;
-  
-  if (outsideTemp == feelsLike){
-     //If the temps are the same then create req's
-    
-    //It's HOT
-    if (outsideTemp >= 26) {
-      if (thermostatTemp != 22) {
-        compareWeather.recommend.recommendation = "Boy! It is HOT! The recommended thermostat " +
-          "setting is 22 C. The thermostat is being adjusted from " + thermostatTemp + ".";
-        compareWeather.sensor.thermostatTemp = 22;
-        return getAssetRegistry('org.acme.sample.Sensor')
-        .then(function (assetRegistry) {
-          return assetRegistry.update(compareWeather.recommend);
-      });
-      } else {
-        compareWeather.recommend.recommendation = "Boy! It is HOT! The recommended thermostat " +
-          "setting is 22 C. Way to go! Your thermostat is already optimally set.";
-        return getAssetRegistry('org.acme.sample.Sensor')
-        .then(function (assetRegistry) {
-          return assetRegistry.update(compareWeather.recommend);
-        });
-      }
-    //Temperate weather  
-    } else if (outsideTemp >= 20 && outsideTemp < 26) {
-      if (thermostatTemp != 20) {
-        compareWeather.recommend.recommendation = "Nice weather you're having! The recommended" 
-          + " thermostat setting is 20 C. The thermostat is being adjusted from " + thermostatTemp +
-          ".";
-        compareWeather.sensor.thermostatTemp = 20;
-        return getAssetRegistry('org.acme.sample.Sensor')
-        .then(function (assetRegistry) {
-          return assetRegistry.update(compareWeather.recommend);
-      });
-      } else {
-        compareWeather.recomend.recommendation = "Great weather! The recommended thermostat " +
-          "setting is 20 C.Way to go! Your thermostat is already optimally set.";
-        return getAssetRegistry('org.acme.sample.Sensor')
-        .then(function (assetRegistry) {
-          return assetRegistry.update(compareWeather.recommend);
-        });
-      }
-    //Cooler temps
-    } else {
-      if (thermostatTemp != 19) {
-        compareWeather.recommend.recommendation = "Getting chilly! The recommended" 
-          + " thermostat setting is 19 C. The thermostat is being adjusted from " + thermostatTemp +
-          ".";
-        compareWeather.recommend.thermostatTemp = 19;
-        return getAssetRegistry('org.acme.sample.Sensor')
-        .then(function (assetRegistry) {
-          return assetRegistry.update(compareWeather.recommend);
-      });
-      } else {
-        compareWeather.recommend.recommendation = "It's getting chilly! The recommended thermostat " +
-          "setting is 19 C.Way to go! Your thermostat is already optimally set.";
-        return getAssetRegistry('org.acme.sample.Sensor')
-        .then(function (assetRegistry) {
-          return assetRegistry.update(compareWeather.recommend);
-        });
-      }
-    }
-  }
-  else {
-    //Set the req's off of what it feelsLike and not what the actual temp is
-    
-    //It's HOT
-    if (feelsLike >= 26) {
-      if (thermostatTemp != 22) {
-        compareWeather.recommend.recommendation = "Boy! It feels HOT! The recommended thermostat " +
-          "setting is 22 C. The thermostat is being adjusted from " + thermostatTemp + ".";
-        compareWeather.recommend.thermostatTemp = 22;
-        return getAssetRegistry('org.acme.sample.Sensor')
-        .then(function (assetRegistry) {
-          return assetRegistry.update(compareWeather.recommend);
-      });
-      } else {
-        compareWeather.recommend.recommendation = "Boy! It feels HOT! The recommended thermostat " +
-          "setting is 22 C. Way to go! Your thermostat is already optimally set.";
-        return getAssetRegistry('org.acme.sample.Sensor')
-        .then(function (assetRegistry) {
-          return assetRegistry.update(compareWeather.recommend);
-        });
-      }
-    //Temperate weather  
-    } else if (feelsLike >= 20 && feelsLike < 26) {
-      if (thermostatTemp != 20) {
-        compareWeather.recommend.recommendation = "It feels quite nice! The recommended" 
-          + " thermostat setting is 20 C. The thermostat is being adjusted from " + thermostatTemp +
-          ".";
-        compareWeather.recommend.thermostatTemp = 20;
-        return getAssetRegistry('org.acme.sample.Sensor')
-        .then(function (assetRegistry) {
-          return assetRegistry.update(compareWeather.recommend);
-      });
-      } else {
-        compareWeather.recommend.recommendation = "It feels nice out! The recommended thermostat " +
-          "setting is 20 C.Way to go! Your thermostat is already optimally set.";
-        return getAssetRegistry('org.acme.sample.Sensor')
-        .then(function (assetRegistry) {
-          return assetRegistry.update(compareWeather.recommend);
-        });
-      }
-    //Cooler temps
-    } else {
-      if (feelsLike != 19) {
-        compareWeather.recommend.recommendation = "Brr! Where is my jacket? The recommended" 
-          + " thermostat setting is 19 C. The thermostat is being adjusted from " + thermostatTemp +
-          ".";
-        compareWeather.recommend.thermostatTemp = 19;
-        return getAssetRegistry('org.acme.sample.Sensor')
-        .then(function (assetRegistry) {
-          return assetRegistry.update(compareWeather.recommend);
-      });
-      } else {
-        compareWeather.recommend.recommendation = "Brr! Where is the heat? The recommended thermostat "
-          + "setting is 19 C.Way to go! Your thermostat is already optimally set.";
-        return getAssetRegistry('org.acme.sample.Sensor')
-        .then(function (assetRegistry) {
-          return assetRegistry.update(compareWeather.recommend);
-        });
-      }
-    }
-  }
-}
+//创建新订单时不能直接使用new，下面是官方文档给出的生成新资源的JS语句：
+// let factory = this.businessNetworkDefinition.getFactory();此句照抄
+// 下面调用的函数的三个参数是，命名空间，资源名称，辨识ID定义
+// owner = factory.newResource('ibm.work', 'order', 'orderID:1234567890');
+// 接下来就可以对新生成的资源进行各种操作
+// owner.firstName = 'Fred';
+// owner.lastName = 'Bloggs';
