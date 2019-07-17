@@ -11,9 +11,8 @@
 * @transaction
 */
 function onAddCommodity(addCommodity) {
-  var temp = addCommodity.newCommodity
+  var temp = addCommodity.newCommodity;
   addCommodity.seller0.commodityList.push(temp);
-  //更新资产时获取资产注册表getAssetRegistry,此处更新的是参与者，所以有所不同
   return getParticipantRegistry('ibm.work.seller').then(
     function (participantRegistry) {
       return participantRegistry.update(addCommodity.seller0);
@@ -36,8 +35,8 @@ function onDelCommodity(delCommodity) {
   return getParticipantRegistry('ibm.work.seller').then(
     function (participantRegistry) {
       return participantRegistry.update(delCommodity.seller0);
-    });
-  }
+  });
+}
 
 /**
 * A transaction processor function description
@@ -45,49 +44,49 @@ function onDelCommodity(delCommodity) {
 * @transaction
 */
 async function onMakeOrder(makeOrder){
-  var myDate = new Date();
-  let factory = this.businessNetworkDefinition.getFactory();
-  temp = factory.newResourse('ibm.work', 'order', 'orderID:1234567890');
-  temp.seller0 = seller0;
-  temp.buyer0 = buyer0;
-  temp.state = recieved;
-  temp.time = myDate.getTime();
+  var date = new Date();
+  let factory = getFactory();
+  let id0=date.toTimeString()+makeOrder.seller0.userID+makeOrder.buyer0.userID;
+
+  temp = factory.newResource('ibm.work', 'order', 'orderID:'+id0);
+  temp.seller0 = makeOrder.seller0;
+  temp.buyer0 = makeOrder.buyer0;
+  temp.cmd=makeOrder.cmd;
+  temp.state = 'recieved';
+
   for(var i = 0, len = makeOrder.seller0.commodityList.length; i < len; i++){
-    if(makeOrder.seller0.commodityList[i].cmdName == makeOrder.cmdName){
-      temp.cmd = makeOrder.seller0.commodityList[i];
+    if(makeOrder.seller0.commodityList[i].cmdName == makeOrder.cmd.cmdName){
+      temp.cmd.cmdPrice=makeOrder.seller0.commodityList[i].cmdPrice*temp.cmd.cmdNum;
+      makeOrder.seller0.commodityList[i].cmdNum-=temp.cmd.cmdNum;
       break;
     }
   }
-  makeOrder.seller0.orders.push(temp);
-  makeOrder.buyer0.orders.push(temp);
-  //makeOrder.seller0.money += temp.cmd.cmdPrice;
+  makeOrder.seller0.orders.push(id0);
+  makeOrder.seller0.record="接到订单："+id0;
+  makeOrder.buyer0.orders.push(id0);
+  makeOrder.buyer0.record="已下单："+id0;
   makeOrder.buyer0.money -= temp.cmd.cmdPrice;
+
+  let assetRegistry0=await getAssetRegistry('ibm.work.order');
   let participantRegistry0 = await getParticipantRegistry('ibm.work.seller');
   let participantRegistry1 = await getParticipantRegistry('ibm.work.buyer');
+  await assetRegistry0.update(temp);
   await participantRegistry0.update(makeOrder.seller0);
   await participantRegistry1.update(makeOrder.buyer0);
-  setTimeout(
-    function(){
-      if(temp.state != got && temp.state != finished && temp.state != cancled){
-        temp.state = cancled;
-        makeOrder.buyer0.money += temp.cmd.cmdPrice;
-      }
-    }
-  ,864000000);
 }
 
 /**
 * A transaction processor function description
-* @param {ibm.work.cancleOrder} cancleOrder A human description of the parameter
+* @param {ibm.work.cancelOrder} cancelOrder A human description of the parameter
 * @transaction
 */
-function onCancleOrder(cancleOrder){
-  cancleOrder.order0.state = cancled;
-  cancleOrder.order0.buyer0.money += cancleOrder.order0.cmd.cmdPrice;
+async function onCancelOrder(cancelOrder){
+  cancelOrder.order0.state = canceled;
+  cancelOrder.order0.buyer0.money += cancelOrder.order0.cmd.cmdPrice;
   let assetRegistry = await getAssetRegistry('ibm.work.order');
   let participantRegistry = await getParticipantRegistry('ibm.work.buyer');
-  await assetRegistry.update(cancleOrder.order0);
-  await participantRegistry.update(cancleOrder.order0.buyer0);
+  await assetRegistry.update(cancelOrder.order0);
+  await participantRegistry.update(cancelOrder.order0.buyer0);
 }
 
 //创建新订单时不能直接使用new，下面是官方文档给出的生成新资源的JS语句：

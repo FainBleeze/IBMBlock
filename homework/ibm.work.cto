@@ -11,26 +11,17 @@ concept commodity {
 
 //在seller类中还需要记录商品的储量
 concept cmds extends commodity {
-  o Integer cmdNum
+  o Integer cmdNum default=1
 }
 
-//订单状态
-enum orderState{
-  o recieved//已接单
-  o transporting//运输中
-  o got//已签收
-  o finished//已完成，只有当买家确认收货后才会转为已完成，钱转入卖家账户
-  o canceled//已取消，归还买家付的钱
-}
 
 //定义了一个订单类，包括订单号、买卖者账号等内容
 asset order identified by orderID {
   o String orderID
-  o seller seller0
-  o buyer buyer0
+  -->seller seller0
+  -->buyer buyer0
   o commodity cmd//商品信息
-  o orderState state//订单状态
-  o DateTime time//下单时间
+  o String state//订单状态
 }
 
 //定义账号类，包括了ID和账号余额
@@ -44,13 +35,13 @@ abstract participant account identified by userID{
 participant seller extends account {
   //商家的商品列表
   o cmds[] commodityList
-  //未完成的订单列表
-  o order[] orders
+  //订单列表
+  o String[] orders
 }
 
 //定义客户类
 participant buyer extends account {
-  o order[] orders
+  o String[] orders
 }
 
 //添加商品业务,输入商品名、价格、储量
@@ -69,7 +60,7 @@ transaction delCommodity{
 transaction makeOrder {
   -->seller seller0
   -->buyer buyer0
-  o String cmdName
+  o cmds cmd
 }
 
 //卖家发货，如果下单三天后还未发货自动退款
@@ -86,3 +77,12 @@ transaction confirmGet {
 transaction cancelOrder {
   -->order order0
 }
+
+//订单状态,无法调用，选择使用字符串替代
+//enum orderState{
+//  o recieved//已接单
+//  o transporting//运输中
+//  o got//已签收
+//  o finished//已完成，只有当买家确认收货后才会转为已完成，钱转入卖家账户
+//  o canceled//已取消，归还买家付的钱
+//}
