@@ -1,5 +1,36 @@
-var useAPI = require('./API');
-var getAll=require('./getall');
+var request = require('request');
+var getAll = function (cmdType, callback) {
+    //addSeller, addBuyer, addCommodity, delCommodity, makeOrder, cancelOrder, confirmGet, sendOut
+    var base_url = 'http://148.100.87.124:3000/api/ibm.work.';
+    var url0 = base_url + cmdType;
+
+    request(url0, function (error, response, body) {
+        if (!error && response.statusCode == 200) {//验证请求是否发送成功
+            callback(JSON.parse(body));
+        }
+    });
+    return;
+};
+
+var useAPI = function (cmdType, data, callback) {
+    var base_url = 'http://148.100.87.124:3000/api/ibm.work.';
+    var url0 = base_url + cmdType;
+    var cfg = {
+        url: url0,
+        method: "POST",
+        json: true,
+        headers: {
+            "Content-type": "application/json",
+        },
+        body: data
+    };
+
+    request(cfg, function (error, response, body) {
+        if (!error && response.statusCode == 200) {//验证请求是否发送成功
+            callback(JSON.parse(body));
+        }
+    });
+};
 var WebSocketServer = require('ws').Server,
     wss = new WebSocketServer({ port: 8181 });
 var sellernum = 10;
@@ -9,28 +40,57 @@ wss.on('connection', function (ws) {
     ws.on('message', function (msg) {
         console.log(msg);
         msg = JSON.parse(msg);
-        
+
         //获取商家全部信息
         if (msg.tag == 'getSeller') {
-            getAll('seller', function (resp) {
-                resp.tag = 'getSeller';
-                ws.send(JSON.stringify(resp));
-            });
+            if (typeof (msg.id) != 'undefined') {
+                getAll('seller/' + msg.id, function (resp) {
+                    console.log('getting one');
+                    console.log(JSON.stringify(resp));
+                    resp.tag = 'getSeller';
+                    ws.send(JSON.stringify(resp));
+                    console.log(JSON.stringify(resp));
+                });
+            }
+            else {
+                getAll('seller', function (resp) {
+                    console.log('getting sellers');
+                    resp.tag = 'getSeller';
+                    ws.send(JSON.stringify(resp));
+                    console.log(JSON.stringify(resp));
+                });
+            }
         }
-        
+
         //获取买家全部信息
         if (msg.tag == 'getBuyer') {
-            getAll('buyer', function (resp) {
-                resp.tag = 'getBuyer';
-                ws.send(JSON.stringify(resp));
-            });
+            if (typeof (msg.id) != 'undefined') {
+                getAll('buyer/' + msg.id, function (resp) {
+                    resp.tag = 'getBuyer';
+                    ws.send(JSON.stringify(resp));
+                });
+            }
+            else {
+                getAll('buyer', function (resp) {
+                    resp.tag = 'getBuyer';
+                    ws.send(JSON.stringify(resp));
+                });
+            }
         }
         //获取全部订单信息
         if (msg.tag == 'getOrder') {
-            getAll('order', function (resp) {
-                resp.tag = 'getOrder';
-                ws.send(JSON.stringify(resp));
-            });
+            if (typeof (msg.id) != 'undefined') {
+                getAll('order/' + msg.id, function (resp) {
+                    resp.tag = 'getOrder';
+                    ws.send(JSON.stringify(resp));
+                });
+            }
+            else {
+                getAll('order', function (resp) {
+                    resp.tag = 'getOrder';
+                    ws.send(JSON.stringify(resp));
+                });
+            }
         }
 
         //需要数据 money注册资金
