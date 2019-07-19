@@ -4,7 +4,13 @@ Github项目地址:https://github.com/FainBleeze/IBMBlockChain
 
 
 
-## 任务部署：
+## 7.18最终实现：
+
+经过小组成员的努力，我们最终实现了预定的全部功能，并使用Node-red建立了能够对区块链进行可视化操作的前端页面，具体实现的内容可参看项目内[ppt文档](./IBM区块链PPT.pptx)，以及另一个[README文档](./homework/README.md)
+
+
+
+## 7.15任务部署：
 
 #### 准备工作
 
@@ -45,10 +51,6 @@ Github项目地址:https://github.com/FainBleeze/IBMBlockChain
 - [ ] 制作简单的ppt,进行成果展示，应对最终的答辩
 
 
-
-## 最终实现：
-
-经过小组成员的努力，我们最终实现了预定的全部功能，并使用Node-red建立了能够对区块链进行可视化操作的前端页面，具体实现的内容可参看项目内[ppt文档](./IBM区块链PPT.pptx)，以及另一个[README文档](./homework/README.md)
 
 
 
