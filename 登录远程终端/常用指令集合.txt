@@ -1,0 +1,26 @@
+常用指令：
+
+连接远程机
+ssh -i DJBlockchain.pem linux1@148.100.87.124
+
+查看pg状态
+ps -ef|grep playground
+
+查看商务网络是否被正常部署
+composer network ping --card admin@tutorial-network
+
+移除废弃的容器
+docker rm $(docker ps -aq)
+docker rmi $(docker images dev-* -q)
+
+启动api页面，加入后台进程避免中断
+nohup composer-rest-server -c admin@online-shopping -n always -w true >/data/linux1/playground/rest.stdout 2>/data/linux1/playground/rest.stderr & disown
+
+启动api，加入当前进程
+composer-rest-server -c admin@empty-business-network -n always -w true
+
+启动playground
+nohup composer-playground >/data/playground/playground.stdout 2>/data/playground/playground.stderr & disown
+
+启动node-red
+nohup node-red >/data/linux1/playground/rest.stdout 2>/data/linux1/playground/rest.stderr & disown
