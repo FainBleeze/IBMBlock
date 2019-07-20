@@ -59,12 +59,12 @@ async function onMakeOrder(makeOrder) {
         makeOrder.buyer0.orders.push(id0);
         makeOrder.buyer0.record = "已下单：" + id0;
         makeOrder.buyer0.money -= temp.cmd.cmdPrice;
+        let assetRegistry0 = await getAssetRegistry('ibm.work.order');
+        await assetRegistry0.add(temp);
       }
       break;
     }
   }
-  let assetRegistry0 = await getAssetRegistry('ibm.work.order');
-  await assetRegistry0.add(temp);
   let participantRegistry0 = await getParticipantRegistry('ibm.work.seller');
   await participantRegistry0.update(makeOrder.seller0);
   let participantRegistry1 = await getParticipantRegistry('ibm.work.buyer');
@@ -111,11 +111,13 @@ async function onCancelOrder(cancelOrder) {
 */
 
 function onSendOut(sendOut) {
-  sendOut.order.orderState = 'transporting';
+  if(sendOut.order0.state == 'recieved'){
+  	sendOut.order0.state = 'transporting';
+  }
   return getAssetRegistry('ibm.work.order')
     .then(
       function (assetRegistry) {
-      return assetRegistry.update(sendOut.order);
+      return assetRegistry.update(sendOut.order0);
     });
 }
 
@@ -125,11 +127,13 @@ function onSendOut(sendOut) {
 * @transaction
 */
 
-function onConfirmGet(confirmGet) {
-  confirmGet.order.orderState = 'finished';
-  return getAssetRegistry('ibm.work.order')
-    .then(
-      function (assetRegistry) {
-      return assetRegistry.update(confirmGet.order);
-    });  
+async function onConfirmGet(confirmGet) {
+  if(confirmGet.order0.state=='transporting'){
+  	confirmGet.order0.state = 'finished';
+  	confirmGet.order0.seller0.money += confirmGet.order0.cmd.cmdPrice;
+  }
+  let participantRegistry1 = await getParticipantRegistry('ibm.work.seller');
+  await participantRegistry1.update(confirmGet.order0.seller0);
+  let assetRegistry = await getAssetRegistry('ibm.work.order');
+  await assetRegistry.update(confirmGet.order0);
 }
